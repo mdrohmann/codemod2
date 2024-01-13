@@ -102,7 +102,7 @@ def line_transformation_suggestor(line_transformation, line_filter=None):
                                 user will be prompted about whether to make the
                                 change.  If the output is None, this means "I
                                 don't have a suggestion, but the user should
-                                still be asked if zhe wants to edit the line."
+                                still be asked if they want to edit the line."
     @param line_filter          Given a line, returns True or False.  If False,
                                 a line is ignored (as if line_transformation
                                 returned the line itself for that line).
@@ -208,6 +208,8 @@ def _index_to_row_col(lines, index):
     >>> lines = ['hello\n', 'world\n']
     >>> _index_to_row_col(lines, 0)
     (0, 0)
+    >>> _index_to_row_col(lines, 6)
+    (1, 0)
     >>> _index_to_row_col(lines, 7)
     (1, 1)
     """

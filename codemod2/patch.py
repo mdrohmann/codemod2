@@ -62,20 +62,6 @@ class Patch(object):
             assert file_lines is not None
             self.new_end_line_number = self._patch_end_line_number(file_lines)
 
-    def __repr__(self):
-        assert False, "shouldn't be called"
-        return "Patch(%s)" % ", ".join(
-            map(
-                repr,
-                [
-                    self.path,
-                    self.start_line_number,
-                    self.end_line_number,
-                    self.new_lines,
-                ],
-            )
-        )
-
     def apply_to(self, lines):
         if self.new_lines is None:
             raise ValueError("Can't apply patch without suggested new lines.")
@@ -83,20 +69,27 @@ class Patch(object):
             self.start_line_number : self.new_end_line_number
         ]
 
-    def _patch_end_line_number(self, file_lines):
+    def _patch_end_line_number(self, file_lines) -> int:
+        r"""
+        computes the end line number of the patch
+        
+        >>> l = ["a\n", "b\n", "  c\n", "d\n", "e\n", "f\n"]
+        >>> nl = ["a\n", "  d\n", "e\n", "f\n"]
+        >>> p = Patch(1,2, l, nl, 'filename')
+        >>> p._patch_end_line_number(l)
+        1
+        >>> nl[1] == "  d\n"
+        True
+        """
         # find matching line in patch
-        for i in range(self.start_line_number, len(self.new_lines)):
-            matches = True
-            for j, line in enumerate(file_lines[self.end_line_number :]):
-                if i + j > len(self.new_lines):
+        for i in reversed(range(self.start_line_number, len(self.new_lines))):
+            for j, line in enumerate(reversed(file_lines[self.end_line_number :])):
+                if i - j < 0:
                     raise RuntimeError(
                         "This should not happen: Cannot find end of patch"
                     )
-                if line != self.new_lines[i + j]:
-                    matches = False
-                    break
-            if matches:
-                return i
+                if line != self.new_lines[i - j]:
+                    return i - j
 
         return len(self.new_lines)
 
