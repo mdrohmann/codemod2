@@ -18,7 +18,7 @@ def is_extensionless(path):
     True
     """
     _, ext = os.path.splitext(path)
-    return ext == ''
+    return ext == ""
 
 
 def matches_extension(path, extension):
@@ -35,7 +35,7 @@ def matches_extension(path, extension):
     True
     """
     _, ext = os.path.splitext(path)
-    if ext == '':
+    if ext == "":
         # If there is no extension, grab the file name and
         # compare it to the given extension.
         return os.path.basename(path) == extension
@@ -79,14 +79,16 @@ def path_filter(extensions, exclude_paths=None):
     exclude_paths = exclude_paths or []
 
     def the_filter(path):
-        if not any(matches_extension(path, extension)
-                   for extension in extensions):
+        if not any(matches_extension(path, extension) for extension in extensions):
             return False
         if exclude_paths:
             for excluded in exclude_paths:
-                if (path.startswith(excluded) or
-                        path.startswith('./' + excluded) or
-                        fnmatch.fnmatch(path, excluded)):
+                if (
+                    path.startswith(excluded)
+                    or path.startswith("./" + excluded)
+                    or fnmatch.fnmatch(path, excluded)
+                ):
                     return False
         return True
+
     return the_filter

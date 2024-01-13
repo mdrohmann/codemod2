@@ -18,8 +18,14 @@ class Patch(object):
     ['a', 'b', 'X', 'Y', 'Z', 'e', 'f']
     """
 
-    def __init__(self, start_line_number,  end_line_number=None, file_lines=None, new_lines=None,
-                 path=None):  # noqa
+    def __init__(
+        self,
+        start_line_number,
+        end_line_number=None,
+        file_lines=None,
+        new_lines=None,
+        path=None,
+    ):  # noqa
         """
         Constructs a Patch object.
 
@@ -58,26 +64,35 @@ class Patch(object):
 
     def __repr__(self):
         assert False, "shouldn't be called"
-        return 'Patch(%s)' % ', '.join(map(repr, [
-            self.path,
-            self.start_line_number,
-            self.end_line_number,
-            self.new_lines
-        ]))
+        return "Patch(%s)" % ", ".join(
+            map(
+                repr,
+                [
+                    self.path,
+                    self.start_line_number,
+                    self.end_line_number,
+                    self.new_lines,
+                ],
+            )
+        )
 
     def apply_to(self, lines):
         if self.new_lines is None:
-            raise ValueError('Can\'t apply patch without suggested new lines.')
-        lines[self.start_line_number:self.end_line_number] = self.new_lines[self.start_line_number:self.new_end_line_number]
+            raise ValueError("Can't apply patch without suggested new lines.")
+        lines[self.start_line_number : self.end_line_number] = self.new_lines[
+            self.start_line_number : self.new_end_line_number
+        ]
 
     def _patch_end_line_number(self, file_lines):
         # find matching line in patch
         for i in range(self.end_line_number, len(self.new_lines)):
             matches = True
-            for j, l in enumerate(file_lines[self.end_line_number:]):
+            for j, line in enumerate(file_lines[self.end_line_number :]):
                 if i + j > len(self.new_lines):
-                    raise RuntimeError("This should not happen: Cannot find end of patch")
-                if l != self.new_lines[i+j]:
+                    raise RuntimeError(
+                        "This should not happen: Cannot find end of patch"
+                    )
+                if line != self.new_lines[i + j]:
                     matches = False
                     break
             if matches:
@@ -86,11 +101,11 @@ class Patch(object):
         return len(self.new_lines)
 
     def render_range(self):
-        path = self.path or '<unknown>'
+        path = self.path or "<unknown>"
         if self.start_line_number == self.end_line_number - 1:
-            return f'{path}:{self.start_line_number}'
+            return f"{path}:{self.start_line_number}"
         else:
-            return f'{path}:{self.start_line_number}-{self.end_line_number}'
+            return f"{path}:{self.start_line_number}-{self.end_line_number}"
 
     @property
     def start_position(self):

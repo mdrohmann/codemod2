@@ -13,17 +13,19 @@ class Query(object):
     >>> Query(lambda x: None, start='profile.php:20').start_position
     Position('profile.php', 20)
     """
-    def __init__(self,
-                 suggestor,
-                 start=None,
-                 end=None,
-                 root_directory='.',
-                 path_filter=helpers.path_filter(
-                     extensions=['php', 'phpt', 'js', 'css', 'rb', 'erb']
-                 ),
-                 inc_extensionless=False,
-                 yes_to_all=False):
 
+    def __init__(
+        self,
+        suggestor,
+        start=None,
+        end=None,
+        root_directory=".",
+        path_filter=helpers.path_filter(
+            extensions=["php", "phpt", "js", "css", "rb", "erb"]
+        ),
+        inc_extensionless=False,
+        yes_to_all=False,
+    ):
         """
         @param suggestor            A function that takes a list of lines and
                                     generates instances of Patch to suggest.
@@ -65,19 +67,21 @@ class Query(object):
 
     def clone(self):
         import copy
+
         return copy.copy(self)
 
     def _get_position(self, attr_name):
         attr_value = getattr(self, attr_name)
         if attr_value is None:
             return None
-        if isinstance(attr_value, str) and attr_value.endswith('%'):
+        if isinstance(attr_value, str) and attr_value.endswith("%"):
             attr_value = self.compute_percentile(int(attr_value[:-1]))
             setattr(self, attr_name, attr_value)
         return Position(attr_value)
 
     def get_start_position(self):
-        return self._get_position('_start')
+        return self._get_position("_start")
+
     start_position = property(get_start_position)
 
     @start_position.setter
@@ -85,7 +89,8 @@ class Query(object):
         self._start = value
 
     def get_end_position(self):
-        return self._get_position('_end')
+        return self._get_position("_end")
+
     end_position = property(get_end_position)
 
     @end_position.setter
@@ -103,9 +108,7 @@ class Query(object):
         if not dont_use_cache and self._all_patches_cache is not None:
             return self._all_patches_cache
 
-        print(
-            'Computing full change list (since you specified a percentage)...'
-        )
+        print("Computing full change list (since you specified a percentage)...")
         sys.stdout.flush()  # since print statement ends in comma
 
         endless_query = self.clone()
@@ -121,9 +124,7 @@ class Query(object):
         @param percentage    a number between 0 and 100.
         """
         all_patches = self.get_all_patches()
-        return all_patches[
-            int(len(all_patches) * percentage / 100)
-        ].start_position
+        return all_patches[int(len(all_patches) * percentage / 100)].start_position
 
     def generate_patches(self):
         """
@@ -139,14 +140,15 @@ class Query(object):
         path_list = Query._walk_directory(self.root_directory)
         path_list = Query._sublist(path_list, start_pos.path, end_pos.path)
         path_list = (
-            path for path in path_list if
-            Query._path_looks_like_code(path) and
-            (self.path_filter(path)) or
-            (self.inc_extensionless and helpers.is_extensionless(path))
+            path
+            for path in path_list
+            if Query._path_looks_like_code(path)
+            and (self.path_filter(path))
+            or (self.inc_extensionless and helpers.is_extensionless(path))
         )
         for path in path_list:
             try:
-                with open(path, 'r', encoding='utf-8') as fh:
+                with open(path, "r", encoding="utf-8") as fh:
                     lines = fh.readlines()
             except (IOError, UnicodeDecodeError):
                 # If we can't open the file--perhaps it's a symlink whose
@@ -161,13 +163,12 @@ class Query(object):
                     if patch.end_line_number >= end_pos.line_number:
                         break  # suggestion is post-end_pos
 
-                old_lines = lines[
-                    patch.start_line_number:patch.end_line_number]
+                old_lines = lines[patch.start_line_number : patch.end_line_number]
                 if patch.new_lines is None or patch.new_lines != old_lines:
                     patch.path = path
                     yield patch
                     # re-open file, in case contents changed
-                    with open(path, 'r', encoding='utf-8') as fh:
+                    with open(path, "r", encoding="utf-8") as fh:
                         lines[:] = fh.readlines()
 
     @staticmethod
@@ -177,9 +178,11 @@ class Query(object):
         of `root_directory`.
         """
 
-        paths = [os.path.join(root, name)
-                 for root, dirs, files in os.walk(root_directory)  # noqa
-                 for name in files]
+        paths = [
+            os.path.join(root, name)
+            for root, dirs, files in os.walk(root_directory)  # noqa
+            for name in files
+        ]
         paths.sort()
         return paths
 
@@ -212,8 +215,8 @@ class Query(object):
         False
         """
         return (
-            '/.' not in path and
-            path[-1] != '~' and
-            not path.endswith('tags') and
-            not path.endswith('TAGS')
+            "/." not in path
+            and path[-1] != "~"
+            and not path.endswith("tags")
+            and not path.endswith("TAGS")
         )

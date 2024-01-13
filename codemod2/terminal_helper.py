@@ -13,9 +13,9 @@ import termios
 import struct
 
 
-def _unicode(s, encoding='utf-8'):
+def _unicode(s, encoding="utf-8"):
     if isinstance(s, bytes):
-        return s.decode(encoding, 'ignore')
+        return s.decode(encoding, "ignore")
     else:
         return str(s)
 
@@ -28,9 +28,7 @@ def terminal_get_size(default_size=(25, 80)):
 
     def ioctl_gwinsz(fd):  # TABULATION FUNCTIONS
         try:  # Discover terminal width
-            return struct.unpack(
-                'hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234')
-            )
+            return struct.unpack("hh", fcntl.ioctl(fd, termios.TIOCGWINSZ, "1234"))
         except Exception:
             return None
 
@@ -47,7 +45,7 @@ def terminal_get_size(default_size=(25, 80)):
     if not size:
         # env vars or finally defaults
         try:
-            size = (os.environ['LINES'], os.environ['COLUMNS'])
+            size = (os.environ["LINES"], os.environ["COLUMNS"])
         except Exception:
             return default_size
 
@@ -59,15 +57,15 @@ def terminal_clear():
     Like calling the `clear` UNIX command.  If that fails, just prints a bunch
     of newlines :-P
     """
-    if not _terminal_use_capability('clear'):
-        print('\n' * 8)
+    if not _terminal_use_capability("clear"):
+        print("\n" * 8)
 
 
 def terminal_move_to_beginning_of_line():
     """
     Jumps the cursor back to the beginning of the current line of text.
     """
-    if not _terminal_use_capability('cr'):
+    if not _terminal_use_capability("cr"):
         print()
 
 
@@ -86,33 +84,30 @@ def _terminal_use_capability(capability_name):
 def terminal_print(text, color):
     """Print text in the specified color, without a terminating newline."""
     _terminal_set_color(color)
-    print(text, end='')
+    print(text, end="")
     _terminal_restore_color()
 
 
 def _terminal_set_color(color):
     def color_code(set_capability, possible_colors):
         try:
-            color_index = possible_colors.split(' ').index(color)
+            color_index = possible_colors.split(" ").index(color)
         except ValueError:
             return None
         set_code = curses.tigetstr(set_capability)
         if not set_code:
             return None
         return curses.tparm(set_code, color_index)
-    code = (
-        color_code(
-            'setaf', 'BLACK RED GREEN YELLOW BLUE MAGENTA CYAN WHITE'
-        ) or color_code(
-            'setf', 'BLACK BLUE GREEN CYAN RED MAGENTA YELLOW WHITE'
-        )
-    )
+
+    code = color_code(
+        "setaf", "BLACK RED GREEN YELLOW BLUE MAGENTA CYAN WHITE"
+    ) or color_code("setf", "BLACK BLUE GREEN CYAN RED MAGENTA YELLOW WHITE")
     if code:
         code = _unicode(code)
         sys.stdout.write(code)
 
 
 def _terminal_restore_color():
-    restore_code = curses.tigetstr('sgr0')
+    restore_code = curses.tigetstr("sgr0")
     if restore_code:
         sys.stdout.write(_unicode(restore_code))
