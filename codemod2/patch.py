@@ -85,7 +85,7 @@ class Patch(object):
 
     def _patch_end_line_number(self, file_lines):
         # find matching line in patch
-        for i in range(self.end_line_number, len(self.new_lines)):
+        for i in range(self.start_line_number, len(self.new_lines)):
             matches = True
             for j, line in enumerate(file_lines[self.end_line_number :]):
                 if i + j > len(self.new_lines):

@@ -74,7 +74,7 @@ Options (all optional) include:
 You can also use codemod for transformations that are much more sophisticated than regular expression substitution.  Rather than using the command line, you write Python code that looks like:
 
     import codemod2
-    codemod2.Query(...).run_interactive()
+    codemod2.run_interactive(codemod2.Query(...))
 
 Note:  I didn't test yet, that the Query object still works.
 

@@ -149,7 +149,7 @@ def multiline_regex_suggestor(regex, substitution=None, ignore_case=False):
     @param regex         Either a regex object or a string describing a regex.
     @param substitution  Either None (meaning that we should flag the matches
                          without suggesting an alternative), or a string (using
-                         \1 notation to backreference match groups) or a
+                         \1 notation to back-reference match groups) or a
                          function (that takes a match object as input).
     """
     if isinstance(regex, str):
@@ -186,7 +186,7 @@ def multiline_regex_suggestor(regex, substitution=None, ignore_case=False):
             start_row, _ = _index_to_row_col(lines, match.start())
             end_row, _ = _index_to_row_col(lines, match.end() - 1)
 
-            if substitution is None:
+            if substitution_func is None:
                 new_lines = None
             else:
                 new_lines = substitution_func(match)
