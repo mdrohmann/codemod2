@@ -1,10 +1,13 @@
 [tool.poetry]
 name = "codemod2"
-version = "0.1.0"
+version = "0.1.1"
 description = "a fork of facebook/codemod using pcre regular expressions"
 authors = ["Martin Drohmann <mdrohmann@gmail.com>"]
-license = "Apache License"
+license = "Apache License 2.0"
 readme = "README.md"
+
+[tool.poetry.scripts]
+codemod2 = "codemod2.base:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
