@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "codemod2"
+version = "0.1.0"
+description = "a fork of facebook/codemod using pcre regular expressions"
+authors = ["Martin Drohmann <mdrohmann@gmail.com>"]
+license = "Apache License"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pcre2 = "^0.3.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+flake8 = "^7.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

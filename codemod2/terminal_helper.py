@@ -14,10 +14,10 @@ import struct
 
 
 def _unicode(s, encoding='utf-8'):
-        if type(s) == bytes:
-            return s.decode(encoding, 'ignore')
-        else:
-            return str(s)
+    if isinstance(s, bytes):
+        return s.decode(encoding, 'ignore')
+    else:
+        return str(s)
 
 
 def terminal_get_size(default_size=(25, 80)):

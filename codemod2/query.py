@@ -1,8 +1,8 @@
 import os
 import sys
 
-from codemod.position import Position
-import codemod.helpers as helpers
+from codemod2.position import Position
+import codemod2.helpers as helpers
 
 
 class Query(object):
@@ -21,7 +21,8 @@ class Query(object):
                  path_filter=helpers.path_filter(
                      extensions=['php', 'phpt', 'js', 'css', 'rb', 'erb']
                  ),
-                 inc_extensionless=False):
+                 inc_extensionless=False,
+                 yes_to_all=False):
 
         """
         @param suggestor            A function that takes a list of lines and
@@ -60,6 +61,7 @@ class Query(object):
         self.path_filter = path_filter
         self.inc_extensionless = inc_extensionless
         self._all_patches_cache = None
+        self.yes_to_all = yes_to_all
 
     def clone(self):
         import copy
@@ -92,7 +94,7 @@ class Query(object):
 
     def get_all_patches(self, dont_use_cache=False):
         """
-        Computes a list of all patches matching this query, though ignoreing
+        Computes a list of all patches matching this query, though ignoring
         self.start_position and self.end_position.
 
         @param dont_use_cache   If False, and get_all_patches has been called
@@ -103,7 +105,7 @@ class Query(object):
 
         print(
             'Computing full change list (since you specified a percentage)...'
-        ),
+        )
         sys.stdout.flush()  # since print statement ends in comma
 
         endless_query = self.clone()
@@ -144,7 +146,8 @@ class Query(object):
         )
         for path in path_list:
             try:
-                lines = list(open(path))
+                with open(path, 'r', encoding='utf-8') as fh:
+                    lines = fh.readlines()
             except (IOError, UnicodeDecodeError):
                 # If we can't open the file--perhaps it's a symlink whose
                 # destination no loner exists--then short-circuit.
@@ -164,7 +167,8 @@ class Query(object):
                     patch.path = path
                     yield patch
                     # re-open file, in case contents changed
-                    lines[:] = list(open(path))
+                    with open(path, 'r', encoding='utf-8') as fh:
+                        lines[:] = fh.readlines()
 
     @staticmethod
     def _walk_directory(root_directory):
