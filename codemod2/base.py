@@ -24,7 +24,7 @@ from __future__ import print_function
 
 import argparse
 import os
-import pcre2 as re
+import regex as re
 import sys
 import textwrap
 from math import ceil
@@ -126,7 +126,7 @@ def regex_suggestor(regex, substitution=None, ignore_case=False, line_filter=Non
         if ignore_case is False:
             regex = re.compile(regex)
         else:
-            regex = re.compile(regex, re.CompileOption.CASELESS)
+            regex = re.compile(regex, re.IGNORECASE)
 
     if substitution is None:
 
@@ -141,7 +141,7 @@ def regex_suggestor(regex, substitution=None, ignore_case=False, line_filter=Non
 
 
 def multiline_regex_suggestor(regex, substitution=None, ignore_case=False):
-    """
+    r"""
     Return a suggestor function which, given a list of lines, generates patches
     to substitute matches of the given regex with (if provided) the given
     substitution.
@@ -149,26 +149,36 @@ def multiline_regex_suggestor(regex, substitution=None, ignore_case=False):
     @param regex         Either a regex object or a string describing a regex.
     @param substitution  Either None (meaning that we should flag the matches
                          without suggesting an alternative), or a string (using
-                         $1 notation to back-reference match groups) or a
+                         \1 notation to back-reference match groups) or a
                          function (that takes a match object as input).
+
+    >>> s = multiline_regex_suggestor(r'args=(?<dict>\{(?:[^{}]+|(?P>dict))*+\})', r'args=Args({dict})')
+    >>> patches = list(s([
+    ...     '  some_arg=2,\n',
+    ...     '  args={"abc": 1, "def": {"ghi": 1}, "jkl": 1}),\n',
+    ...     '  another_arg="another_arg"',
+    ... ]))
+    >>> len(patches)
+    1
+    >>> p = patches[0]
+    >>> (p.start_line_number, p.end_line_number)
+    (1, 2)
+    >>> p.new_lines
+    ['  args=Args({"abc": 1, "def": {"ghi": 1}, "jkl": 1}),\n']
     """
     if isinstance(regex, str):
         if ignore_case is False:
-            regex = re.compile(
-                regex, re.CompileOption.DOTALL | re.CompileOption.MULTILINE
-            )
+            regex = re.compile(regex, re.DOTALL | re.MULTILINE)
         else:
             regex = re.compile(
                 regex,
-                re.CompileOption.DOTALL
-                | re.CompileOption.MULTILINE
-                | re.CompileOption.CASELESS,
+                re.DOTALL | re.MULTILINE | re.IGNORECASE,
             )
 
     if isinstance(substitution, str):
 
-        def substitution_func(match):
-            lines = match.expand(substitution)
+        def substitution_func(match: re.Match):
+            lines = match.expandf(substitution)
             lines = lines.splitlines(keepends=True)
             return lines
     else:
@@ -177,19 +187,19 @@ def multiline_regex_suggestor(regex, substitution=None, ignore_case=False):
     def suggestor(lines):
         pos = 0
         while True:
-            try:
-                match = regex.match("".join(lines), pos)
-                if not match:
-                    break
-            except re.exceptions.MatchError:
+            match = regex.search("".join(lines), pos)
+            if not match:
                 break
-            start_row, _ = _index_to_row_col(lines, match.start())
-            end_row, _ = _index_to_row_col(lines, match.end() - 1)
+            assert isinstance(match, re.Match)
+            start_row, start_col = _index_to_row_col(lines, match.start())
+            end_row, end_col = _index_to_row_col(lines, match.end())
 
             if substitution_func is None:
                 new_lines = None
             else:
                 new_lines = substitution_func(match)
+                new_lines[0] = lines[start_row][0:start_col] + new_lines[0]
+                new_lines[-1] = new_lines[-1] + lines[end_row][end_col + 1 :]
 
             yield Patch(
                 start_line_number=start_row,
@@ -303,7 +313,7 @@ def _ask_about_patch(query, patch, editor, default_no, yes_to_all):
         query.yes_to_all = True
         p = "y"
     if p in "yE":
-        lines = patch.new_lines
+        lines = patch.apply_to(lines)
         _save(patch.path, lines)
     if p in "eE":
         run_editor(patch.start_position, editor)

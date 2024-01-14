@@ -11,7 +11,7 @@ codemod2 = "codemod2.base:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pcre2 = "^0.3.0"
+regex = "^2023.12.25"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.4"

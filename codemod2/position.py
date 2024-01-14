@@ -1,3 +1,6 @@
+from typing import Self, Type
+
+
 class Position(object):
     """
     >>> p1, p2 = Position('./hi.php', 20), Position('./hi.php:20')
@@ -11,7 +14,7 @@ class Position(object):
     Position('./hi.php', 20)
     """
 
-    def __init__(self, *path_and_line_number: str | int | "Position"):
+    def __init__(self, *path_and_line_number: str | int | Type['Position']):
         """
         You can use the two parameter version, and pass a
         path and line number, or
