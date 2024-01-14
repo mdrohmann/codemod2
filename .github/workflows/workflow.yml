@@ -57,6 +57,11 @@ jobs:
           source .venv/bin/activate
           ruff check
     
+    - name: Run pyre
+      run: |
+          source .venv/bin/activate
+          pyre
+    
     - name: Run tests
       run: |
           source .venv/bin/activate
