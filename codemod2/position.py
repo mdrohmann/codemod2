@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Union
 
 
 class Position(object):
@@ -12,9 +12,11 @@ class Position(object):
     ./hi.php:20
     >>> Position(p1)
     Position('./hi.php', 20)
+    >>> Position(None, None)
+    Position(None, None)
     """
 
-    def __init__(self, *path_and_line_number: str | int | Type["Position"]):
+    def __init__(self, *path_and_line_number: Union[str, int, "Position"]):
         """
         You can use the two parameter version, and pass a
         path and line number, or
@@ -23,9 +25,11 @@ class Position(object):
         or another instance of Position to copy.
         """
         if len(path_and_line_number) == 2:
-            self.path, self.line_number = path_and_line_number
-            assert isinstance(self.path, str)
-            assert isinstance(self.line_number, int)
+            path, line_number = path_and_line_number
+            assert path is None or isinstance(path, str)
+            assert line_number is None or isinstance(line_number, int)
+            self.path: str | None = path
+            self.line_number: int | None = line_number
         elif len(path_and_line_number) == 1:
             arg = path_and_line_number[0]
             assert isinstance(arg, str | Position)
