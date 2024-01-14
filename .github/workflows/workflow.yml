@@ -57,10 +57,10 @@ jobs:
           source .venv/bin/activate
           ruff check
     
-    - name: Run pyre
+    - name: Run mypy
       run: |
           source .venv/bin/activate
-          pyre
+          mypy .
     
     - name: Run tests
       run: |

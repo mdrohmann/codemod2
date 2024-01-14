@@ -2,6 +2,5 @@
   "site_package_search_strategy": "pep561",
   "source_directories": [
     "."
-  ],
-  "search_path": [".stubs"]
+  ]
 }
