@@ -87,7 +87,9 @@ class Patch(object):
         assert self.new_lines is not None
         end_line_number = self.end_line_number
         last_new_line = self.new_lines[-1:]
-        if len(last_new_line) == 1 and last_new_line[0][-1] != "\n":
+        if len(last_new_line) == 1 and (
+            len(last_new_line[0]) == 0 or last_new_line[0][-1] != "\n"
+        ):
             last_new_line = [
                 "".join(
                     last_new_line
@@ -112,7 +114,13 @@ class Patch(object):
         return (
             self.start_line_number
             + len(self.new_lines)
-            - (1 if len(self.new_lines) > 0 and self.new_lines[-1][-1] != "\n" else 0)
+            - (
+                1
+                if len(self.new_lines) > 0
+                and len(self.new_lines[-1]) > 0
+                and self.new_lines[-1][-1] != "\n"
+                else 0
+            )
         )
 
     def render_range(self) -> str:

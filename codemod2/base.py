@@ -121,7 +121,9 @@ def line_transformation_suggestor(line_transformation, line_filter=None):
     return suggestor
 
 
-def regex_suggestor(regex, substitution=None, ignore_case=False, line_filter=None):
+def regex_suggestor(
+    regex: re.Pattern, substitution=None, ignore_case=False, line_filter=None
+):
     if isinstance(regex, str):
         if ignore_case is False:
             regex = re.compile(regex)
@@ -135,7 +137,7 @@ def regex_suggestor(regex, substitution=None, ignore_case=False, line_filter=Non
     else:
 
         def line_transformation(line):
-            return regex.substitute(substitution, line)
+            return regex.subf(substitution, line)
 
     return line_transformation_suggestor(line_transformation, line_filter)
 
@@ -270,17 +272,29 @@ def _index_to_row_col(lines, index):
 
 
 def print_patch(patch, lines_to_print, file_lines):
+    end_line_number = patch.end_line_number
     if patch.new_lines is None:
         diff = [
             f"* {line}"
-            for line in file_lines[patch.start_line_number : patch.end_line_number]
+            for line in file_lines[patch.start_line_number : end_line_number]
         ]
     else:
         differ = Differ()
+        if (
+            len(patch.new_lines) == 0
+            or len(patch.new_lines[-1]) == 0
+            or patch.new_lines[-1][-1] != "\n"
+        ) and len(file_lines) > end_line_number + 1:
+            new_lines = patch.new_lines[:-1] + [
+                patch.new_lines[-1] + file_lines[end_line_number]
+            ]
+            end_line_number += 1
+        else:
+            new_lines = patch.new_lines
         diff = list(
             differ.compare(
-                file_lines[patch.start_line_number : patch.end_line_number],
-                patch.new_lines[patch.start_line_number : patch.new_end_line_number],
+                file_lines[patch.start_line_number : end_line_number],
+                new_lines,
             )
         )
 
@@ -303,13 +317,16 @@ def print_patch(patch, lines_to_print, file_lines):
     size_of_down_context = int(ceil(size_of_context / 2))
     start_context_line_number = max(patch.start_line_number - size_of_up_context, 0)
     end_context_line_number = min(
-        patch.end_line_number + size_of_down_context, len(file_lines)
+        end_line_number + size_of_down_context, len(file_lines)
     )
-    print("".join(file_lines[start_context_line_number : patch.start_line_number]))
+    print(
+        "  "
+        + "  ".join(file_lines[start_context_line_number : patch.start_line_number])
+    )
     for line in diff:
         color = _color(line[0])
         terminal.terminal_print(line, color=color)
-    print("".join(file_lines[patch.end_line_number + 1 : end_context_line_number]))
+    print("  " + "  ".join(file_lines[end_line_number:end_context_line_number]))
 
 
 def _ask_about_patch(query, patch, editor, default_no, yes_to_all):
