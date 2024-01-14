@@ -11,7 +11,7 @@ class Position(object):
     Position('./hi.php', 20)
     """
 
-    def __init__(self, *path_and_line_number):
+    def __init__(self, *path_and_line_number: str | int | "Position"):
         """
         You can use the two parameter version, and pass a
         path and line number, or
@@ -21,8 +21,11 @@ class Position(object):
         """
         if len(path_and_line_number) == 2:
             self.path, self.line_number = path_and_line_number
+            assert isinstance(self.path, str)
+            assert isinstance(self.line_number, int)
         elif len(path_and_line_number) == 1:
             arg = path_and_line_number[0]
+            assert isinstance(arg, str | Position)
             if isinstance(arg, Position):
                 self.path, self.line_number = arg.path, arg.line_number
             else:
@@ -36,8 +39,8 @@ class Position(object):
         else:
             raise TypeError("Position takes 1 or 2 arguments")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Position({repr(self.path)}, {self.line_number})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.path}:{self.line_number}"

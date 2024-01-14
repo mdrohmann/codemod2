@@ -131,7 +131,7 @@ def regex_suggestor(regex, substitution=None, ignore_case=False, line_filter=Non
     if substitution is None:
 
         def line_transformation(line):
-            return None if regex.scan(line) else line
+            return None if regex.match(line) else line
     else:
 
         def line_transformation(line):
@@ -149,7 +149,7 @@ def multiline_regex_suggestor(regex, substitution=None, ignore_case=False):
     @param regex         Either a regex object or a string describing a regex.
     @param substitution  Either None (meaning that we should flag the matches
                          without suggesting an alternative), or a string (using
-                         \1 notation to back-reference match groups) or a
+                         $1 notation to back-reference match groups) or a
                          function (that takes a match object as input).
     """
     if isinstance(regex, str):
@@ -303,7 +303,7 @@ def _ask_about_patch(query, patch, editor, default_no, yes_to_all):
         query.yes_to_all = True
         p = "y"
     if p in "yE":
-        patch.apply_to(lines)
+        lines = patch.new_lines
         _save(patch.path, lines)
     if p in "eE":
         run_editor(patch.start_position, editor)
