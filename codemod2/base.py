@@ -155,7 +155,7 @@ def multiline_regex_suggestor(regex, substitution=None, ignore_case=False):
     >>> s = multiline_regex_suggestor(r'args=(?<dict>\{(?:[^{}]+|(?P>dict))*+\})', r'args=Args({dict})')
     >>> patches = list(s([
     ...     '  some_arg=2,\n',
-    ...     '  args={"abc": 1, "def": {"ghi": 1}, "jkl": 1}),\n',
+    ...     '  args={"abc": 1, "def": {"ghi": 1}, "jkl": 1},\n',
     ...     '  another_arg="another_arg"',
     ... ]))
     >>> len(patches)
@@ -165,6 +165,36 @@ def multiline_regex_suggestor(regex, substitution=None, ignore_case=False):
     (1, 2)
     >>> p.new_lines
     ['  args=Args({"abc": 1, "def": {"ghi": 1}, "jkl": 1}),\n']
+
+    Example 2:  remove in middle of line
+    >>> s2 = multiline_regex_suggestor(r'middle', r'')
+    >>> patches2 = list(s2([
+    ...     '  before\n',
+    ...     '  start middle end\n',
+    ...     '  after\n',
+    ... ]))
+    >>> len(patches2)
+    1
+    >>> p2 = patches2[0]
+    >>> (p2.start_line_number, p2.end_line_number)
+    (1, 2)
+    >>> p2.new_lines
+    ['  start  end\n']
+
+    Example 2:  remove newline
+    >>> s3 = multiline_regex_suggestor(r'end\R', r'')
+    >>> patches3 = list(s3([
+    ...     '  before\n',
+    ...     '  start middle end\n',
+    ...     '  after\n',
+    ... ]))
+    >>> len(patches3)
+    1
+    >>> p3 = patches3[0]
+    >>> (p3.start_line_number, p3.end_line_number)
+    (1, 3)
+    >>> p3.new_lines
+    ['  start middle   after\n']
     """
     if isinstance(regex, str):
         if ignore_case is False:
@@ -198,8 +228,13 @@ def multiline_regex_suggestor(regex, substitution=None, ignore_case=False):
                 new_lines = None
             else:
                 new_lines = substitution_func(match)
-                new_lines[0] = lines[start_row][0:start_col] + new_lines[0]
-                new_lines[-1] = new_lines[-1] + lines[end_row][end_col + 1 :]
+                if len(new_lines) > 0:
+                    new_lines[0] = lines[start_row][0:start_col] + new_lines[0]
+                    new_lines[-1] = new_lines[-1] + lines[end_row][end_col:]
+                else:
+                    new_line = lines[start_row][0:start_col] + lines[end_row][end_col:]
+                    if len(new_line) > 0:
+                        new_lines = [new_line]
 
             yield Patch(
                 start_line_number=start_row,
