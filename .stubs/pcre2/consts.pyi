@@ -62,7 +62,7 @@ class NewlineChar(IntEnum):
     NUL: int
 
 A: Incomplete
-I: Incomplete
+I: Incomplete  # noqa
 G: Incomplete
 M: Incomplete
 NE: Incomplete
