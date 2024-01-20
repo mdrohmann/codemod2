@@ -109,6 +109,9 @@ def line_transformation_suggestor(line_transformation, line_filter=None):
     """
 
     def suggestor(lines):
+        # Iterates through the lines, applying the line transformation
+        # function to each one. Yields Patch objects for lines that
+        # should be changed. Skips lines where line_filter returns False.
         for line_number, line in enumerate(lines):
             if line_filter and not line_filter(line):
                 continue
@@ -124,6 +127,17 @@ def line_transformation_suggestor(line_transformation, line_filter=None):
 def regex_suggestor(
     regex: re.Pattern, substitution=None, ignore_case=False, line_filter=None
 ):
+    """
+    regex_suggestor takes a regex pattern and optional substitution, and returns a suggestor 
+    function that can be used with line_transformation_suggestor.
+
+    The returned suggestor will yield patches for lines that match the provided regex. If a
+    substitution is provided, the patch will contain the substituted line. Otherwise, the 
+    patch will just flag the match without suggesting changes.
+
+    A line_filter can also be provided to filter which lines to apply the regex to.
+    """
+
     if isinstance(regex, str):
         if ignore_case is False:
             regex = re.compile(regex)
@@ -272,6 +286,10 @@ def _index_to_row_col(lines, index):
 
 
 def print_patch(patch, lines_to_print, file_lines):
+    """
+    Prints a unified diff of the changes in the given Patch to the terminal,
+    with line numbers and surrounding context.
+    """
     end_line_number = patch.end_line_number
     if patch.new_lines is None:
         diff = [
@@ -450,7 +468,7 @@ def _parse_command_line():
             of the <font> tag.  From the
             command line, you might make progress by running:
 
-              codemod2.py -m -d /home/jrosenstein/www --extensions php,html \
+              codemod2.py -m -d /home/modrohmann/www --extensions py,html \
                          '<font *color="?(.*?)"?>(.*?)</font>' \
                          '<span style="color: \1;">\2</span>'
 

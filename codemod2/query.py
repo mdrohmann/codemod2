@@ -124,6 +124,7 @@ class Query(object):
         all_patches = self.get_all_patches()
         return all_patches[int(len(all_patches) * percentage / 100)].start_position
 
+
     def generate_patches(self):
         """
         Generates a list of patches for each file underneath

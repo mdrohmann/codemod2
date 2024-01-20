@@ -83,13 +83,31 @@ class Patch(object):
             assert file_lines is not None
             self.new_end_line_number = self._patch_end_line_number()
 
+    def is_complete(self) -> bool:
+        """Checks if the patch ends with a newline.
+
+        This is used to determine if the patch range needs to be extended
+        to include the next line, in case the patch doesn't end with a newline.
+
+        Returns:
+            bool: True if the patch ends with a newline, False otherwise.
+        """
+        last_new_line = self.new_lines[-1:]
+        if len(last_new_line) == 0:
+            return False
+        if len(last_new_line[0]) == 0:
+            return False
+        if last_new_line[0][-1] != "\n":
+            return False
+        return True
+
+    # Applies this patch to the given list of code lines, returning the modified code.
+    # Extends the end line number if the patch does not end with a newline, to ensure the next match starts on the correct line.
     def apply_to(self, lines: list[str]) -> list[str]:
         assert self.new_lines is not None
         end_line_number = self.end_line_number
         last_new_line = self.new_lines[-1:]
-        if len(last_new_line) == 1 and (
-            len(last_new_line[0]) == 0 or last_new_line[0][-1] != "\n"
-        ):
+        if not self.is_complete():
             last_new_line = [
                 "".join(
                     last_new_line
@@ -109,23 +127,26 @@ class Patch(object):
         computes the end line number of the patch
 
         if new lines don't end in a new line we ensure that it next time, we re-try to match at this line again
+
+        Returns:
+            int: The end line number for the patch.
         """
         assert self.new_lines is not None
         return (
             self.start_line_number
             + len(self.new_lines)
-            - (
-                1
-                if len(self.new_lines) > 0
-                and len(self.new_lines[-1]) > 0
-                and self.new_lines[-1][-1] != "\n"
-                else 0
-            )
+            - (1 if not self.is_complete() else 0)
         )
 
+
     def render_range(self) -> str:
-        """
-        returns a string <path>:<range>
+        """Renders the range of this patch as a string.
+        
+        Returns a string in the format <path>:<start_line_number>-<end_line_number> 
+        representing the range of lines modified by this patch.
+        
+        If start_line_number and end_line_number differ by 1, renders as 
+        <path>:<start_line_number> for brevity.
         """
         path = self.path or "<unknown>"
         if self.start_line_number == self.end_line_number - 1:
