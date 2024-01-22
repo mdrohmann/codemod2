@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "codemod2"
-version = "0.2.3"
+version = "0.2.4"
 description = "a fork of facebook/codemod using pcre compatible regular expressions"
 authors = ["Martin Drohmann <mdrohmann@gmail.com>"]
 license = "Apache License 2.0"
